@@ -3,6 +3,7 @@ export default {
   data() {
     return {
       newtodoEntrie: '',
+      editedTodo: null,
       todoEntries: []
     }
   },
@@ -14,7 +15,9 @@ export default {
           title: this.newtodoEntrie,
           status: 'In progress',
           createday: new Date().toLocaleString(),
-          completed: false
+          lastModify: new Date().toLocaleString(),
+          completed: false,
+          buttonCompleted: 'Complete',
         })
         this.newtodoEntrie = ''
       }
@@ -26,13 +29,28 @@ export default {
       }
     },
     toggleCompletion(todoEntrie) {
-        if (todoEntrie.completed = !todoEntrie.completed) {
-            todoEntrie.status = 'Completed'
-        } else {
-            todoEntrie.status = 'In progress'
-        }
+      if ((todoEntrie.completed = !todoEntrie.completed)) {
+        todoEntrie.status = 'Completed'
+        todoEntrie.buttonCompleted = 'In progress'
+      } else {
+        todoEntrie.status = 'In progress'
+        todoEntrie.buttonCompleted = 'Complete'
+      }
+    },
+    editTaskName(todoEntrie) {
+      this.editedTodo = todoEntrie
+    },
+    doneEditTaskName(todoEntrie) {
+      if (!this.editedTodo) {
+        return
+      }
+      this.editedTodo = null
+      todoEntrie.title = todoEntrie.title.trim()
+      todoEntrie.lastModify = new Date().toLocaleString()
+      if (!todoEntrie.title) {
+        this.removetodoEntrie(todoEntrie)
+      }
     }
-
   }
 }
 </script>
@@ -84,7 +102,16 @@ export default {
                   :key="todoEntrie.id"
                 >
                   <td class="whitespace-nowrap px-6 py-4 font-medium">{{ index + 1 }}</td>
-                  <td class="whitespace-nowrap px-6 py-4">{{ todoEntrie.title }}</td>
+                  <td class="whitespace-nowrap px-6 py-4 relative cursor-pointer" @dblclick="editTaskName(todoEntrie)">
+                    {{ todoEntrie.title }}
+                    <input
+                      v-model="todoEntrie.title"
+                      :class="{ showTyping: todoEntrie === editedTodo}"
+                      type="text"
+                      class="peer top-1/2 hidden -translate-y-2/4 top-1 w-96 left-0 absolute h-14 bg-white rounded-[7px] border border-blue-gray-200 px-3 font-sans text-sm font-normal text-blue-gray-700"
+                      placeholder=" "
+                    />
+                  </td>
                   <td
                     class="whitespace-nowrap px-6 py-4 font-bold"
                     :class="{
@@ -95,7 +122,7 @@ export default {
                     {{ todoEntrie.status }}
                   </td>
                   <td class="whitespace-nowrap px-6 py-4">{{ todoEntrie.createday }}</td>
-                  <td class="whitespace-nowrap px-6 py-4">{{ todoEntrie.createday }}</td>
+                  <td class="whitespace-nowrap px-6 py-4">{{ todoEntrie.lastModify }}</td>
                   <td class="whitespace-nowrap px-6 py-4">
                     <div class="flex flex-1 gap-2">
                       <button
@@ -103,13 +130,14 @@ export default {
                         class="flex-shrink-0 bg-green-500 hover:bg-teal-700 border-green-500 hover:border-teal-700 text-sm border-4 text-white py-1 px-2 rounded"
                         type="button"
                       >
-                        complete
+                        {{ todoEntrie.buttonCompleted }}
                       </button>
                       <button
+                      @click="doneEditTaskName(todoEntrie)"
                         class="flex-shrink-0 bg-yellow-500 hover:bg-teal-700 border-yellow-500 hover:border-teal-700 text-sm border-4 text-white py-1 px-2 rounded"
                         type="button"
                       >
-                        Edit
+                        Update
                       </button>
                       <button
                         @click="removetodoEntrie(todoEntrie)"
@@ -129,3 +157,8 @@ export default {
     </div>
   </div>
 </template>
+<style scoped>
+.showTyping {
+  display:  block !important;
+}
+</style>
