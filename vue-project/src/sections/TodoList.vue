@@ -1,15 +1,35 @@
 <script>
+const STORAGE_KEY = 'vue-todomvc'
 export default {
   data() {
     return {
       newtodoEntrie: '',
       editedTodo: null,
-      todoEntries: []
+      editedTodoId: null, // New property to track the ID of the task being edited
+      todoEntries: JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'),
+    }
+  },
+    // watch todos change for localStorage persistence
+    watch: {
+      todoEntries: {
+      handler(todoEntries) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(todoEntries))
+      },
+      deep: true
     }
   },
   methods: {
     addtodoEntrie() {
-      if (this.newtodoEntrie.trim() !== '') {
+      if (this.editedTodoId !== null) {
+        // If there is an edited task, update its title
+        const todoEntrie = this.todoEntries.find((todo) => todo.id === this.editedTodoId)
+        if (todoEntrie) {
+          todoEntrie.title = this.newtodoEntrie.trim()
+          todoEntrie.lastModify = new Date().toLocaleString()
+        }
+        this.editedTodoId = null
+      } else if (this.newtodoEntrie.trim() !== '') {
+        // Add a new task
         this.todoEntries.push({
           id: Date.now(),
           title: this.newtodoEntrie,
@@ -17,10 +37,10 @@ export default {
           createday: new Date().toLocaleString(),
           lastModify: new Date().toLocaleString(),
           completed: false,
-          buttonCompleted: 'Complete',
+          buttonCompleted: 'Complete'
         })
-        this.newtodoEntrie = ''
       }
+      this.newtodoEntrie = ''
     },
     removetodoEntrie(todoEntrie) {
       const index = this.todoEntries.indexOf(todoEntrie)
@@ -29,27 +49,13 @@ export default {
       }
     },
     toggleCompletion(todoEntrie) {
-      if ((todoEntrie.completed = !todoEntrie.completed)) {
-        todoEntrie.status = 'Completed'
-        todoEntrie.buttonCompleted = 'In progress'
-      } else {
-        todoEntrie.status = 'In progress'
-        todoEntrie.buttonCompleted = 'Complete'
-      }
+      todoEntrie.completed = !todoEntrie.completed
+      todoEntrie.status = todoEntrie.completed ? 'Completed' : 'In progress'
+      todoEntrie.buttonCompleted = todoEntrie.completed ? 'In progress' : 'Complete'
     },
     editTaskName(todoEntrie) {
-      this.editedTodo = todoEntrie
-    },
-    doneEditTaskName(todoEntrie) {
-      if (!this.editedTodo) {
-        return
-      }
-      this.editedTodo = null
-      todoEntrie.title = todoEntrie.title.trim()
-      todoEntrie.lastModify = new Date().toLocaleString()
-      if (!todoEntrie.title) {
-        this.removetodoEntrie(todoEntrie)
-      }
+      this.newtodoEntrie = todoEntrie.title // Set the input field to the task title
+      this.editedTodoId = todoEntrie.id
     }
   }
 }
@@ -102,11 +108,11 @@ export default {
                   :key="todoEntrie.id"
                 >
                   <td class="whitespace-nowrap px-6 py-4 font-medium">{{ index + 1 }}</td>
-                  <td class="max-w-40 px-6 py-4 relative cursor-pointer break-words" @dblclick="editTaskName(todoEntrie)">
+                  <td>
                     {{ todoEntrie.title }}
                     <input
                       v-model="todoEntrie.title"
-                      :class="{ showTyping: todoEntrie === editedTodo}"
+                      :class="{ showTyping: todoEntrie === editedTodo }"
                       type="text"
                       class="peer top-1/2 hidden -translate-y-2/4 top-1 left-0 absolute h-14 bg-white rounded-[7px] border border-blue-gray-200 px-3 font-sans text-sm font-normal text-blue-gray-700"
                       placeholder=" "
@@ -133,11 +139,11 @@ export default {
                         {{ todoEntrie.buttonCompleted }}
                       </button>
                       <button
-                      @click="doneEditTaskName(todoEntrie)"
+                        @click="editTaskName(todoEntrie)"
                         class="flex-shrink-0 bg-yellow-500 hover:bg-teal-700 border-yellow-500 hover:border-teal-700 text-sm border-4 text-white py-1 px-2 rounded"
                         type="button"
                       >
-                        Update
+                        Edit
                       </button>
                       <button
                         @click="removetodoEntrie(todoEntrie)"
@@ -159,7 +165,7 @@ export default {
 </template>
 <style scoped>
 .showTyping {
-  display:  block !important;
+  display: block !important;
   width: 55rem;
 }
 </style>
