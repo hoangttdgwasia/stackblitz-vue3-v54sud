@@ -57,7 +57,7 @@ export default {
 <template>
   <div
     id="todoEntrie"
-    class="max-w-screen-lg mx-auto bg-white shadow-lg rounded-lg overflow-hidden mt-16"
+    class="max-w-screen-xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden mt-16"
   >
     <div class="px-4 py-2">
       <h1 class="text-gray-800 font-bold text-2xl uppercase">To-Do List</h1>
@@ -102,13 +102,13 @@ export default {
                   :key="todoEntrie.id"
                 >
                   <td class="whitespace-nowrap px-6 py-4 font-medium">{{ index + 1 }}</td>
-                  <td class="whitespace-nowrap px-6 py-4 relative cursor-pointer" @dblclick="editTaskName(todoEntrie)">
+                  <td class="max-w-40 px-6 py-4 relative cursor-pointer break-words" @dblclick="editTaskName(todoEntrie)">
                     {{ todoEntrie.title }}
                     <input
                       v-model="todoEntrie.title"
                       :class="{ showTyping: todoEntrie === editedTodo}"
                       type="text"
-                      class="peer top-1/2 hidden -translate-y-2/4 top-1 w-96 left-0 absolute h-14 bg-white rounded-[7px] border border-blue-gray-200 px-3 font-sans text-sm font-normal text-blue-gray-700"
+                      class="peer top-1/2 hidden -translate-y-2/4 top-1 left-0 absolute h-14 bg-white rounded-[7px] border border-blue-gray-200 px-3 font-sans text-sm font-normal text-blue-gray-700"
                       placeholder=" "
                     />
                   </td>
@@ -160,5 +160,6 @@ export default {
 <style scoped>
 .showTyping {
   display:  block !important;
+  width: 55rem;
 }
 </style>
