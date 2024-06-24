@@ -7,15 +7,28 @@ export default {
       editedTodo: null,
       editedTodoId: null, // New property to track the ID of the task being edited
       todoEntries: JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'),
+      visibility: 'all' // New property to track the current filter
     }
   },
-    // watch todos change for localStorage persistence
-    watch: {
-      todoEntries: {
+  // watch todos change for localStorage persistence
+  watch: {
+    todoEntries: {
       handler(todoEntries) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(todoEntries))
       },
       deep: true
+    }
+  },
+  computed: {
+    filteredTodoEntries() {
+      if (this.visibility === 'all') {
+        return this.todoEntries
+      } else if (this.visibility === 'completed') {
+        return this.todoEntries.filter(todo => todo.completed)
+      } else if (this.visibility === 'active') {
+        return this.todoEntries.filter(todo => !todo.completed)
+      }
+      return this.todoEntries
     }
   },
   methods: {
@@ -56,10 +69,18 @@ export default {
     editTaskName(todoEntrie) {
       this.newtodoEntrie = todoEntrie.title // Set the input field to the task title
       this.editedTodoId = todoEntrie.id
+    },
+    setVisibility(filter) {
+      this.visibility = filter
+    }
+    ,
+    clearCompleted() {
+      this.todoEntries = this.todoEntries.filter(todo => !todo.completed)
     }
   }
 }
 </script>
+
 <template>
   <div
     id="todoEntrie"
@@ -104,7 +125,7 @@ export default {
               <tbody>
                 <tr
                   class="border-b border-neutral-200 dark:border-white/10"
-                  v-for="(todoEntrie, index) in todoEntries"
+                  v-for="(todoEntrie, index) in filteredTodoEntries"
                   :key="todoEntrie.id"
                 >
                   <td class="whitespace-nowrap px-6 py-4 font-medium">{{ index + 1 }}</td>
@@ -161,11 +182,52 @@ export default {
         </div>
       </div>
     </div>
+
+    <div class="p-2">
+      <div class="inline-flex rounded-md shadow-sm" role="group">
+        <button
+          @click="setVisibility('all')"
+          :class="{ selected: visibility === 'all' }"
+          type="button"
+          class="px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-s-lg hover:bg-gray-100 hover:text-blue-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:text-white dark:hover:bg-gray-700  dark:focus:text-white"
+        >
+          All
+        </button>
+        <button
+          @click="setVisibility('active')"
+          :class="{ selected: visibility === 'active' }"
+          type="button"
+          class="px-4 py-2 text-sm font-medium text-gray-900 bg-white border-t border-b border-gray-200 hover:bg-gray-100 hover:text-blue-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:text-white dark:hover:bg-gray-700  dark:focus:text-white"
+        >
+          In progress
+        </button>
+        <button
+          @click="setVisibility('completed')"
+          :class="{ selected: visibility === 'completed' }"
+          type="button"
+          class="px-4 py-2 text-sm font-medium text-gray-900 bg-white border-t border-b border-l  border-gray-200 hover:bg-gray-100 hover:text-blue-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:text-white dark:hover:bg-gray-700  dark:focus:text-white"
+        >
+          Completed
+        </button>
+        <button
+          @click="clearCompleted()"
+          type="button"
+          class="px-4 py-2 text-sm font-medium text-gray-900 bg-white border  border-gray-200 rounded-e-lg hover:bg-gray-100 hover:text-blue-700  dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:text-white dark:hover:bg-gray-700  dark:focus:text-white"
+        >
+          Clear Completed
+        </button>
+      </div>
+    </div>
   </div>
 </template>
+
 <style scoped>
 .showTyping {
   display: block !important;
   width: 55rem;
+}
+.selected {
+  background-color: #4fd1c5;
+  color: white;
 }
 </style>
